@@ -580,7 +580,7 @@ AltTabPopup.prototype = {
                 let clone = this._previewClones[i];
                 Tweener.addTween(clone, {
                     opacity: 0,
-                    time: PREVIEW_SWITCHER_FADEOUT_TIME / 4,
+                    time: PREVIEW_SWITCHER_FADEOUT_TIME,
                     transition: 'linear',
                     onCompleteScope: this,
                     onComplete: function () {
@@ -743,16 +743,6 @@ AltTabPopup.prototype = {
         // https://bugzilla.gnome.org/show_bug.cgi?id=596695 for
         // details.) So we check now. (Have to do this after updating
         // selection.)
-        let [x, y, mods] = global.get_pointer();
-        if (!(mods & this._modifierMask)) {
-            this._finish();
-            return false;
-        }
-        Tweener.addTween(this._appSwitcher.actor, {
-            opacity: 255,
-            time: POPUP_FADE_OUT_TIME,
-            transition: 'easeInQuad'
-        });
 
         // We delay showing the popup so that fast Alt+Tab users aren't
         // disturbed by the popup briefly flashing.
