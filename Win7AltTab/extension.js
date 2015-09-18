@@ -9,15 +9,15 @@ const Tweener = imports.ui.tweener;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Signals = imports.signals;
-const THUMBNAIL_SCALE = 0.09;
+const THUMBNAIL_SCALE = 0.12;
 
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
 const POPUP_FADE_OUT_TIME = 0.1; // seconds
 
 const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
 const CHECK_DESTROYED_TIMEOUT = 100; // milliseconds
-const PREVIEW_DELAY_TIMEOUT = 180; // milliseconds
-var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
+const PREVIEW_DELAY_TIMEOUT = 300; // milliseconds
+var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
 
 function mod(a, b) {
     return (a + b) % b;
@@ -941,7 +941,7 @@ AppIcon.prototype = {
 
     set_size: function (size) {
         this.resize(size);
-        let iconSize = 32;
+        let iconSize = 40;
         let iconOverlap = 3;
 
         let [width, height] = this.getSize();
