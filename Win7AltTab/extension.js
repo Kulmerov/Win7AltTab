@@ -369,8 +369,6 @@ AltTabPopup.prototype = {
             Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-
         this._haveModal = false;
         this._modifierMask = 0;
 
@@ -546,36 +544,6 @@ AltTabPopup.prototype = {
     },
 
     destroy: function () {
-        var doDestroy = Lang.bind(this, function () {
-            Main.uiGroup.remove_actor(this.actor);
-            this.actor.destroy();
-        });
-
-        this._popModal();
-        if (this.actor.visible) {
-            Tweener.addTween(this.actor,
-                {
-                    opacity: 0,
-                    time: POPUP_FADE_OUT_TIME,
-                    transition: 'easeOutQuad',
-                    onComplete: doDestroy
-                });
-        } else {
-            doDestroy();
-        }
-        let windows = global.get_window_actors();
-        for (i in windows) {
-            if (windows[i].get_meta_window().get_window_type()
-                !== Meta.WindowType.DESKTOP)
-                Tweener.addTween(windows[i], {
-                    opacity: 255,
-                    time: PREVIEW_SWITCHER_FADEOUT_TIME / 4
-                });
-        }
-        ;
-    },
-
-    _onDestroy: function () {
         this._popModal();
 
         if (this._motionTimeoutId)
@@ -586,10 +554,24 @@ AltTabPopup.prototype = {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
         this._windowManager.disconnect(this._dcid);
         this._windowManager.disconnect(this._mcid);
-        /*if (this._checkDestroyedTimeoutId != 0) {
-         Mainloop.source_remove(this._checkDestroyedTimeoutId);
-         this._checkDestroyedTimeoutId = 0;
-         }*/
+
+        let windows = global.get_window_actors();
+        for (i in windows) {
+            if (windows[i].get_meta_window().get_window_type()
+                !== Meta.WindowType.DESKTOP) {
+                windows[i].opacity = 255;
+            }
+        }
+        this._isTransparentWindows = false;
+        var doDestroy = Lang.bind(this, function () {
+            Main.uiGroup.remove_actor(this.actor);
+            this.actor.destroy();
+        });
+
+        this._popModal();
+        this.actor.opacity = 0;
+        Main.uiGroup.remove_actor(this.actor);
+        this.actor.destroy();
     },
 
     _clearPreview: function () {
