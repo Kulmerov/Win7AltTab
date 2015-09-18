@@ -394,6 +394,7 @@ AltTabPopup.prototype = {
         this._changedWS = false;
         this._changedBinding = false;
         this._windowManager = global.window_manager;
+        this._isTransparentWindows = false;
 
         this._dcid = this._windowManager.connect('destroy',
             Lang.bind(this, this._windowDestroyed));
@@ -610,12 +611,34 @@ AltTabPopup.prototype = {
         }
     },
 
+    _tween: function(window, opacity, time) {
+        Tweener.addTween(window, {
+            opacity: opacity,
+            time: time,
+            transition: 'linear'
+        });
+    },
+
+    _makeTransparentWindows: function () {
+        this._isTransparentWindows = true;
+        let windows = global.get_window_actors();
+        for (i in windows) {
+            let metaWindow = windows[i].get_meta_window();
+            if (metaWindow.get_window_type() !== Meta.WindowType.DESKTOP) {
+                this._tween(windows[i], 60, PREVIEW_SWITCHER_FADEOUT_TIME);
+            }
+        }
+    },
+
     _doWindowPreview: function () {
         if (!this._previewEnabled || this._winIcons.length < 1 || !this._winIcons[this._currentIndex].window) {
             return;
         }
 
         let showPreview = function () {
+        	if (this._isTransparentWindows == false) {
+                this._makeTransparentWindows();
+            }
             this._displayPreviewTimeoutId = null;
             let childBox = new Clutter.ActorBox();
 
@@ -653,17 +676,6 @@ AltTabPopup.prototype = {
         let delay = PREVIEW_DELAY_TIMEOUT;
         this._displayPreviewTimeoutId =
             Mainloop.timeout_add(delay, Lang.bind(this, showPreview));
-        let windows = global.get_window_actors();
-        for (i in windows) {
-            if (windows[i].get_meta_window().get_window_type()
-                !== Meta.WindowType.DESKTOP)
-                Tweener.addTween(windows[i], {
-                    opacity: 20,
-                    time: PREVIEW_SWITCHER_FADEOUT_TIME / 4
-                });
-        }
-        ;
-
     },
 
     _select: function (index) {
