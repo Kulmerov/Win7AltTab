@@ -563,13 +563,7 @@ AltTabPopup.prototype = {
             }
         }
         this._isTransparentWindows = false;
-        var doDestroy = Lang.bind(this, function () {
-            Main.uiGroup.remove_actor(this.actor);
-            this.actor.destroy();
-        });
 
-        this._popModal();
-        this.actor.opacity = 0;
         Main.uiGroup.remove_actor(this.actor);
         this.actor.destroy();
     },
@@ -737,12 +731,6 @@ AltTabPopup.prototype = {
                 this._winIcons[this._currentIndex]._demandsAttention);
             this._changedWS = false;
         }
-
-        // There's a race condition; if the user released Alt before
-        // we got the grab, then we won't be notified. (See
-        // https://bugzilla.gnome.org/show_bug.cgi?id=596695 for
-        // details.) So we check now. (Have to do this after updating
-        // selection.)
 
         // We delay showing the popup so that fast Alt+Tab users aren't
         // disturbed by the popup briefly flashing.
