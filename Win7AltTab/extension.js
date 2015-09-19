@@ -546,6 +546,17 @@ AltTabPopup.prototype = {
     destroy: function () {
         this._popModal();
 
+        let windows = global.get_window_actors();
+        for (i in windows) {
+            let metaWindow = windows[i].get_meta_window();
+            if (metaWindow.get_window_type() !== Meta.WindowType.DESKTOP) {
+                if (metaWindow.get_maximized() != 3) {
+                    Tweener.removeTweens(windows[i], "opacity");
+                }
+                windows[i].opacity = 255;
+            }
+        }
+
         if (this._motionTimeoutId)
             Mainloop.source_remove(this._motionTimeoutId);
         if (this._initialDelayTimeoutId)
@@ -555,13 +566,6 @@ AltTabPopup.prototype = {
         this._windowManager.disconnect(this._dcid);
         this._windowManager.disconnect(this._mcid);
 
-        let windows = global.get_window_actors();
-        for (i in windows) {
-            if (windows[i].get_meta_window().get_window_type()
-                !== Meta.WindowType.DESKTOP) {
-                windows[i].opacity = 255;
-            }
-        }
         this._isTransparentWindows = false;
 
         Main.uiGroup.remove_actor(this.actor);
