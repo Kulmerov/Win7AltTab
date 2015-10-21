@@ -550,9 +550,7 @@ AltTabPopup.prototype = {
         for (i in windows) {
             let metaWindow = windows[i].get_meta_window();
             if (metaWindow.get_window_type() !== Meta.WindowType.DESKTOP) {
-                if (metaWindow.get_maximized() != 3) {
-                    Tweener.removeTweens(windows[i], "opacity");
-                }
+                Tweener.removeTweens(windows[i], "opacity");
                 windows[i].opacity = 255;
             }
         }
@@ -605,11 +603,7 @@ AltTabPopup.prototype = {
         for (i in windows) {
             let metaWindow = windows[i].get_meta_window();
             if (metaWindow.get_window_type() !== Meta.WindowType.DESKTOP) {
-            	if (metaWindow.get_maximized() == 3) {
-                    windows[i].opacity = 0;
-                    continue;
-                }
-                this._tween(windows[i], 60, PREVIEW_SWITCHER_FADEOUT_TIME);
+                this._tween(windows[i], 0, PREVIEW_SWITCHER_FADEOUT_TIME);
             }
         }
     },
