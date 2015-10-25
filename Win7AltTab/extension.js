@@ -9,6 +9,8 @@ const Tweener = imports.ui.tweener;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Signals = imports.signals;
+const Lightbox = imports.ui.lightbox;
+
 const THUMBNAIL_SCALE = 0.12;
 
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
@@ -16,8 +18,10 @@ const POPUP_FADE_OUT_TIME = 0.1; // seconds
 
 const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
 const CHECK_DESTROYED_TIMEOUT = 100; // milliseconds
-const PREVIEW_DELAY_TIMEOUT = 300; // milliseconds
+const PREVIEW_DELAY_TIMEOUT = 150; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
+
+const SHADE_WINDOW_FADE_TIME = 0; //seconds
 
 function mod(a, b) {
     return (a + b) % b;
@@ -393,11 +397,19 @@ AltTabPopup.prototype = {
         this._changedBinding = false;
         this._windowManager = global.window_manager;
         this._isTransparentWindows = false;
+        this._lightbox = new Lightbox.Lightbox(Main.uiGroup, { 
+            fadeTime: SHADE_WINDOW_FADE_TIME 
+        });
 
         this._dcid = this._windowManager.connect('destroy',
             Lang.bind(this, this._windowDestroyed));
         this._mcid = this._windowManager.connect('map',
             Lang.bind(this, this._activateSelected));
+
+        this.actorWithClones = new Cinnamon.GenericContainer({
+            name : 'containerWithClones'
+        }); 
+        Main.uiGroup.add_actor(this.actorWithClones);
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
@@ -546,6 +558,14 @@ AltTabPopup.prototype = {
     destroy: function () {
         this._popModal();
 
+        //clear preview
+        Main.uiGroup.remove_actor(this.actorWithClones);
+        this.actorWithClones.destroy();
+
+        //remove shade window
+        this._lightbox.hide();
+        this._lightbox.destroy();
+
         let windows = global.get_window_actors();
         for (i in windows) {
             let metaWindow = windows[i].get_meta_window();
@@ -580,7 +600,7 @@ AltTabPopup.prototype = {
                     transition: 'linear',
                     onCompleteScope: this,
                     onComplete: function () {
-                        this.actor.remove_actor(clone);
+                        this.actorWithClones.remove_actor(clone);
                         clone.destroy();
                     }
                 });
@@ -627,7 +647,7 @@ AltTabPopup.prototype = {
             for (let i = 0; i < clones.length; i++) {
                 let clone = clones[i];
                 previewClones.push(clone.actor);
-                this.actor.add_actor(clone.actor);
+                this.actorWithClones.add_actor(clone.actor);
                 let [width, height] = clone.actor.get_size();
                 childBox.x1 = clone.x;
                 childBox.x2 = clone.x + width;
@@ -735,6 +755,8 @@ AltTabPopup.prototype = {
         this._initialDelayTimeoutId = Mainloop.timeout_add(POPUP_DELAY_TIMEOUT,
             Lang.bind(this, function () {
                 this._appSwitcher.actor.opacity = 255;
+                this._lightbox.show();
+                this._lightbox.highlight(this.actor);
                 this._initialDelayTimeoutId = 0;
             }));
 
